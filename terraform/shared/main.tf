@@ -14,7 +14,7 @@ terraform {
   }
   backend "azurerm" {
     resource_group_name  = "pc-manual-resources"
-    storage_account_name = "pctfstate"
+    storage_account_name = "pctfstateazavea"
     container_name       = "pcc"
     key                  = "shared.tfstate"
   }
@@ -22,7 +22,7 @@ terraform {
 }
 
 locals {
-  stack_id = "pcc"
+  stack_id = "pcc-azavea"
   region   = "West Europe"
   location = lower(replace(local.region, " ", ""))
   prefix   = "${local.stack_id}-${local.location}"
@@ -40,7 +40,7 @@ resource "azurerm_resource_group" "shared" {
 }
 
 resource "azurerm_storage_account" "pc-compute" {
-  name                     = "${replace(local.prefix, "-", "")}storage"
+  name                     = "pccwesteutorageazavea" # "${replace(local.prefix, "-", "")}storage"# "${replace(local.prefix, "-", "")}storage"
   resource_group_name      = azurerm_resource_group.shared.name
   location                 = azurerm_resource_group.shared.location
   account_tier             = "Standard"

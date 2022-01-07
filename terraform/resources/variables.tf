@@ -121,7 +121,7 @@ variable "pc_resources_rg" {
 
 variable "pc_resources_kv" {
   type        = string
-  default     = "pc-deploy-secrets"
+  default     = "pc-deploy-secrets-azavea"
   description = "The Azure Key Vault name with pre-configured values."
 }
 

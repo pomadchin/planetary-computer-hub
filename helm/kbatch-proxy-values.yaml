@@ -47,7 +47,7 @@ kbatch-proxy:
         mountPath: /profile-template.yaml
         data:
           python:
-            image: mcr.microsoft.com/planetary-computer/python:2021.11.30.0
+            image: daunnc/planetary-computer-python:2021.11.30.0-dummy # mcr.microsoft.com/planetary-computer/python:2021.11.30.0
             resources:
               requests:
                 cpu: "3.6"

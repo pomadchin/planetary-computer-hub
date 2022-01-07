@@ -16,25 +16,33 @@ daskhub:
     hub:
       baseUrl: "/compute/"
       image:
-        name: pcccr.azurecr.io/jupyterhub/k8s-hub
-        tag: "1.0.1.post0"
+        name: daunnc/k8s-hub
+        tag: "1.0.1-msft-api"
 
       config:
+        # Authenticator:
+          # auto_login: true
         JupyterHub:
           admin_access: false
           admin_users:
-            - taugspurger@microsoft.com
+            - gpomadchin@azavea.com
+            - nzimmerman@azavea.com
+            - jchail@azavea.com
+            - echeipesh@azavea.com
 
-          authenticator_class: generic-oauth
-        GenericOAuthenticator:
+          authenticator_class: dummy
+          # authenticator_class: generic-oauth
+        DummyAuthenticator:
+          password: azadmin
+        # GenericOAuthenticator:
           # oauth_callback_url, client_secret are set via terraform.
-          client_id: "YRKd72gJAcBEQMyyz8QnT9luJNKoRcCnF7TL4ffx"
-          login_service: 'planetarycomputer'
-          userdata_url: 'https://planetarycomputer.microsoft.com/id/users/userdata'
-          token_url: 'https://planetarycomputer.microsoft.com/id/o/token/'
-          authorize_url: 'https://planetarycomputer.microsoft.com/id/o/authorize/'
-          username_key: 'email'
-          userdata_method: 'GET'
+          # client_id: "YRKd72gJAcBEQMyyz8QnT9luJNKoRcCnF7TL4ffx"
+          # login_service: 'planetarycomputer'
+          # userdata_url: 'https://planetarycomputer.microsoft.com/id/users/userdata'
+          # token_url: 'https://planetarycomputer.microsoft.com/id/o/token/'
+          # authorize_url: 'https://planetarycomputer.microsoft.com/id/o/authorize/'
+          # username_key: 'email'
+          # userdata_method: 'GET'
 
       extraEnv:
         # This service principal has read permission on Azure API management.
@@ -130,7 +138,7 @@ daskhub:
               identity = azure.identity.DefaultAzureCredential()
               apim_client = azure.mgmt.apimanagement.ApiManagementClient(
                   identity,
-                  "9da7523a-cb61-4c3e-b1d4-afa5fc6d2da9"
+                  "a45095b7-970f-4548-a689-5f5468a46394"
               )
 
               # We can now request the subscription. These follow the pattern
@@ -195,8 +203,8 @@ daskhub:
           - name: dshm
             mountPath: /dev/shm
 
-          - name: driven-data
-            mountPath: /driven-data/
+          # - name: driven-data
+            # mountPath: /driven-data/
 
       extraEnv:
         DASK_GATEWAY__CLUSTER__OPTIONS__IMAGE: '{JUPYTER_IMAGE_SPEC}'

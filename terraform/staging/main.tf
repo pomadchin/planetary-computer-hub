@@ -15,17 +15,17 @@ module "resources" {
   workspace_id = "83dcaf36e047a90f"
 
   # DaskHub ------------------------------------------------------------------
-  dns_label                 = "pcc-staging"
-  jupyterhub_host           = "pcc-staging.westeurope.cloudapp.azure.com"
+  dns_label                 = "aza-pcc-staging"
+  jupyterhub_host           = "aza-pcc-staging.westeurope.cloudapp.azure.com"
   user_placeholder_replicas = 0
   stac_url                  = "https://planetarycomputer-staging.microsoft.com/api/stac/v1/"
 
-  jupyterhub_singleuser_image_name = "pcccr.azurecr.io/public/planetary-computer/python"
-  jupyterhub_singleuser_image_tag  = "2021.11.30.0"
-  python_image                     = "pcccr.azurecr.io/public/planetary-computer/python:2021.11.30.0"
-  r_image                          = "pcccr.azurecr.io/public/planetary-computer/r:2021.11.19.0"
-  gpu_pytorch_image                = "pcccr.azurecr.io/public/planetary-computer/gpu-pytorch:2021.12.02.1"
-  gpu_tensorflow_image             = "pcccr.azurecr.io/public/planetary-computer/gpu-tensorflow:2021.11.30.0"
+  jupyterhub_singleuser_image_name = "daunnc/planetary-computer-python" # "mcr.microsoft.com/planetary-computer/python"
+  jupyterhub_singleuser_image_tag  = "2021.11.30.0-dummy"
+  python_image                     = "daunnc/planetary-computer-python:2021.11.30.0-dummy" # mcr.microsoft.com/planetary-computer/python:2021.11.30.0
+  r_image                          = "mcr.microsoft.com/planetary-computer/r:2021.11.19.0"
+  gpu_pytorch_image                = "mcr.microsoft.com/planetary-computer/gpu-pytorch:2021.12.02.1"
+  gpu_tensorflow_image             = "mcr.microsoft.com/planetary-computer/gpu-tensorflow:2021.11.30.0"
   qgis_image                       = "pcccr.azurecr.io/planetary-computer/qgis:3.18.0"
 
   kbatch_proxy_url = "http://dhub-staging-kbatch-proxy.staging.svc.cluster.local"
@@ -34,7 +34,7 @@ module "resources" {
 terraform {
   backend "azurerm" {
     resource_group_name  = "pc-manual-resources"
-    storage_account_name = "pctfstate"
+    storage_account_name = "pctfstateazavea"
     container_name       = "pcc"
     key                  = "staging.tfstate"
   }

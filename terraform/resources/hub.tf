@@ -35,15 +35,20 @@ resource "helm_release" "dhub" {
   #   value = "${random_password.test_bot_token.result}=pangeotestbot@microsoft.com"
   # }
 
-  set {
-    name  = "daskhub.jupyterhub.hub.config.GenericOAuthenticator.oauth_callback_url"
-    value = "https://${var.jupyterhub_host}/compute/hub/oauth_callback"
-  }
+  # set {
+    # name  = "daskhub.jupyterhub.hub.config.GenericOAuthenticator.oauth_callback_url"
+    # value = "https://${var.jupyterhub_host}/compute/hub/oauth_callback"
+  # }
 
-  set {
-    name  = "daskhub.jupyterhub.hub.config.GenericOAuthenticator.client_secret"
-    value = data.azurerm_key_vault_secret.id_client_secret.value
-  }
+  # set {
+    # name  = "daskhub.jupyterhub.hub.config.GenericOAuthenticator.client_secret"
+    # value = data.azurerm_key_vault_secret.id_client_secret.value
+  # }
+
+  # set {
+    # name  = "daskhub.jupyterhub.hub.config.JupyterHub.authenticator_class"
+    # value = "dummy"
+  # }
 
   set {
     name  = "daskhub.jupyterhub.hub.extraEnv.AZURE_CLIENT_SECRET"
@@ -146,7 +151,7 @@ resource "helm_release" "dhub" {
 }
 
 data "azurerm_storage_account" "pc-compute" {
-  name                = "${replace(local.prefix, "-", "")}storage"
+  name                = "pccwesteutorageazavea" # "${replace(local.prefix, "-", "")}storage"
   resource_group_name = "${local.prefix}-shared-rg"
 }
 

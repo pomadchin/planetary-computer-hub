@@ -52,7 +52,7 @@ resource "azurerm_kubernetes_cluster" "pc_compute" {
   }
 
   lifecycle {
-    prevent_destroy = true
+    prevent_destroy = false
   }
 }
 

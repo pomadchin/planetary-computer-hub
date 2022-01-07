@@ -64,7 +64,7 @@ jobs:
           export JUPYTERHUB_URL="https://pccompute.westeurope.cloudapp.azure.com/compute"
         else
           export TEST_BOT_TOKEN=${STAGING_TEST_BOT_TOKEN}
-          export JUPYTERHUB_URL="https://pcc-staging.westeurope.cloudapp.azure.com/compute"
+          export JUPYTERHUB_URL="https://aza-pcc-staging.westeurope.cloudapp.azure.com/compute"
         fi
 
         echo [JUPYTERHUB_URL $JUPYTERHUB_URL]
