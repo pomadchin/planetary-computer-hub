@@ -46,6 +46,11 @@ variable "python_image" {
   description = "The tag for the python environment image."
 }
 
+variable "pyspark_image" {
+  type        = string
+  description = "The tag for the PySpark environment image."
+}
+
 variable "r_image" {
   type        = string
   description = "The tag for the R environment image."

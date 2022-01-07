@@ -20,6 +20,24 @@ daskhub:
                   values:
                   - gpu
 
+        # Python Spark -----------------------------------------------------
+        - display_name: "PySpark"
+          default: "True"
+          description: '4 cores, 32 GiB of memory. <a href="https://github.com/pangeo-data/pangeo-docker-images">Pangeo Notebook</a> environment.'
+          kubespawner_override:
+            image: "${pyspark_image}"
+            cpu_guarantee: 3
+            cpu_limit: 4
+            mem_guarantee: "25G"
+            mem_limit: "32G"
+            default_url: "/lab/tree/PlanetaryComputerExamples/README.md"
+            node_affinity_required:
+              - matchExpressions:
+                - key: pc.microsoft.com/userkind
+                  operator: NotIn
+                  values:
+                  - gpu
+
         # R --------------------------------------------------------------------
         - display_name: "R"
           description: '8 cores, 64 GiB of memory. R geospatial environment.'
