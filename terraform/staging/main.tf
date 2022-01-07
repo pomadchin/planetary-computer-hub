@@ -21,8 +21,9 @@ module "resources" {
   stac_url                  = "https://planetarycomputer-staging.microsoft.com/api/stac/v1/"
 
   jupyterhub_singleuser_image_name = "daunnc/planetary-computer-python" # "mcr.microsoft.com/planetary-computer/python"
-  jupyterhub_singleuser_image_tag  = "2021.11.30.0-dummy"
-  python_image                     = "daunnc/planetary-computer-python:2021.11.30.0-dummy" # mcr.microsoft.com/planetary-computer/python:2021.11.30.0
+  jupyterhub_singleuser_image_tag  = "2021.11.30.0"
+  python_image                     = "daunnc/planetary-computer-python:2021.11.30.0" # mcr.microsoft.com/planetary-computer/python:2021.11.30.0
+  pyspark_image                    = "daunnc/planetary-computer-pyspark:2021.11.29.0-gdal3.4-3.1-rf"
   r_image                          = "mcr.microsoft.com/planetary-computer/r:2021.11.19.0"
   gpu_pytorch_image                = "mcr.microsoft.com/planetary-computer/gpu-pytorch:2021.12.02.1"
   gpu_tensorflow_image             = "mcr.microsoft.com/planetary-computer/gpu-tensorflow:2021.11.30.0"
