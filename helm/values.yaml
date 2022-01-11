@@ -162,6 +162,9 @@ daskhub:
           contactEmail: "taugspurger@microsoft.com"
 
     singleuser:
+      # if not set, it also back to default but with no ServiceAccount secrets mounted
+      serviceAccountName: default
+
       # These limits match the "large" profiles, so that a user requesting large will be successfully scheduled.
       # The user scheduler doesn't evict multiple placeholders.
       memory:

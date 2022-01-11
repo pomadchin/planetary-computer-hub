@@ -126,3 +126,47 @@ resource "azurerm_kubernetes_cluster_node_pool" "cpu_worker_pool" {
   }
 
 }
+
+# Spark supports pool with no taints and can select nodes via selector only
+# https://spark.apache.org/docs/latest/running-on-kubernetes.html#how-it-works
+resource "azurerm_kubernetes_cluster_node_pool" "spark_cpu_worker_pool" {
+  name                  = "spcpuworker"
+  kubernetes_cluster_id = azurerm_kubernetes_cluster.pc_compute.id
+  vm_size               = var.cpu_worker_vm_size
+  enable_auto_scaling   = true
+  os_disk_size_gb       = 128
+  orchestrator_version  = var.kubernetes_version
+  # should be Regular since Spark does not support taints, and Spot instance requests adds affinity
+  # priority              = "Spot" # Regular when not set
+  # can only be set when priority is set to Spot
+  # eviction_policy       = "Delete"
+  spot_max_price        = -1
+  vnet_subnet_id        = azurerm_subnet.node_subnet.id
+
+  node_labels = {
+    "k8s.dask.org/dedicated"                = "worker",
+    "pc.microsoft.com/workerkind"           = "spark-cpu",
+    # added here explicitly, otherwise it is added by AKS and forces resource recreation
+    # "kubernetes.azure.com/scalesetpriority" = "spot"
+  }
+
+  # node_taints = [
+    # "kubernetes.azure.com/scalesetpriority=spot:NoSchedule",
+  # ]
+
+  # the initial nodes append can take a while
+  # makes sense to have at least one node at start?
+  min_count = var.cpu_worker_pool_min_count
+  max_count = var.cpu_worker_max_count
+  tags = {
+    Environment = "Production"
+    ManagedBy   = "AI4E"
+  }
+
+  lifecycle {
+    ignore_changes = [
+      node_count,
+    ]
+  }
+
+}
