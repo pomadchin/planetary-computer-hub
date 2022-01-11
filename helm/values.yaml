@@ -107,6 +107,12 @@ daskhub:
           # ---------------------------------------------------
 
           async def pre_spawn_hook(spawner):
+              # expose the Spark UI
+              spawner.extra_container_config = {'ports': [
+                {'containerPort': 8888, 'name': 'notebook-port', 'protocol': 'TCP'},
+                {'containerPort': 4040, 'name': 'spark-ui', 'protocol': 'TCP'}
+              ]}
+
               username = spawner.user.name
               # `username` is an email address. We use that email address to look up the
               # user in the Django App
@@ -152,6 +158,7 @@ daskhub:
                   log.exception("Failed to get secrets for %s", username)
               else:
                   spawner.environment["PC_SDK_SUBSCRIPTION_KEY"] = keys.primary_key
+                  
 
           c.KubeSpawner.pre_spawn_hook = pre_spawn_hook
 
