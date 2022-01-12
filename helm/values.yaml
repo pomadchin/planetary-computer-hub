@@ -111,7 +111,7 @@ daskhub:
               # https://github.com/jupyterhub/kubespawner/issues/501
               # https://discourse.jupyter.org/t/tailoring-spawn-options-and-server-configuration-to-certain-users/8449
               if spawner.user_options.get('profile', '') != 'pyspark':
-                spawner.volume_mounts = list(filter(lambda e: e.get('subPath', '') != 'spark_default_configuration', spawner.volume_mounts))
+                spawner.volume_mounts = list(filter(lambda e: 'spark' not in e.get('subPath', ''), spawner.volume_mounts))
 
               # expose the Spark UI
               spawner.extra_container_config = {'ports': [
@@ -225,6 +225,8 @@ daskhub:
       extraFiles:
         spark_default_configuration:
           mountPath: /home/jovyan/.ipython/profile_default/startup/00-spark-conf.py
+        spark_executor_template:
+          mountPath: /home/jovyan/executor-template.yml
 
       extraEnv:
         DASK_GATEWAY__CLUSTER__OPTIONS__IMAGE: '{JUPYTER_IMAGE_SPEC}'
