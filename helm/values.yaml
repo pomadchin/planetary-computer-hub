@@ -107,6 +107,12 @@ daskhub:
           # ---------------------------------------------------
 
           async def pre_spawn_hook(spawner):
+              # unmount spark default configuration with py env preload if not needed, for more details see
+              # https://github.com/jupyterhub/kubespawner/issues/501
+              # https://discourse.jupyter.org/t/tailoring-spawn-options-and-server-configuration-to-certain-users/8449
+              if spawner.user_options.get('profile', '') != 'pyspark':
+                spawner.volume_mounts = list(filter(lambda e: e.get('subPath', '') != 'spark_default_configuration', spawner.volume_mounts))
+
               # expose the Spark UI
               spawner.extra_container_config = {'ports': [
                 {'containerPort': 8888, 'name': 'notebook-port', 'protocol': 'TCP'},
@@ -169,7 +175,7 @@ daskhub:
           contactEmail: "taugspurger@microsoft.com"
 
     singleuser:
-      # if not set, it also back to default but with no ServiceAccount secrets mounted
+      # if not set, it also backs to default but with no ServiceAccount secrets mounted
       serviceAccountName: default
 
       # These limits match the "large" profiles, so that a user requesting large will be successfully scheduled.
@@ -215,6 +221,10 @@ daskhub:
 
           # - name: driven-data
             # mountPath: /driven-data/
+
+      extraFiles:
+        spark_default_configuration:
+          mountPath: /home/jovyan/.ipython/profile_default/startup/00-spark-conf.py
 
       extraEnv:
         DASK_GATEWAY__CLUSTER__OPTIONS__IMAGE: '{JUPYTER_IMAGE_SPEC}'

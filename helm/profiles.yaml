@@ -126,3 +126,37 @@ daskhub:
                   operator: NotIn
                   values:
                   - gpu
+
+      extraFiles:
+        spark_default_configuration:
+          # TODO(https://github.com/hashicorp/terraform-provider-helm/issues/628): use set-file
+          stringData: |
+            """
+            Default Spark configuration init for the Jypyter instance.
+            """
+            import socket
+            notebook_ip = socket.gethostbyname(socket.gethostname())
+            spark_config = {
+                'spark.master': 'k8s://https://kubernetes.default.svc.cluster.local',
+                'spark.app.name': 'STAC API with RF in K8S',
+                'spark.ui.port': '4040',
+                'spark.driver.blockManager.port': '7777',
+                'spark.driver.port': '2222',
+                'spark.driver.host': notebook_ip,
+                'spark.driver.bindAddress': '0.0.0.0',
+                'spark.executor.instances': '2',
+                'spark.executor.memory': '4g',
+                'spark.driver.memory': '1g',
+                'spark.executor.cores': '3',
+                'spark.kubernetes.namespace': 'staging',
+                'spark.kubernetes.container.image': 'quay.io/daunnc/spark-k8s-py-3.8.8-gdal32:3.1.2',
+                'spark.kubernetes.executor.deleteOnTermination': 'true',
+                'spark.kubernetes.authenticate.driver.serviceAccountName': 'default',
+                'spark.kubernetes.authenticate.caCertFile': '/var/run/secrets/kubernetes.io/serviceaccount/ca.crt',
+                'spark.kubernetes.authenticate.oauthTokenFile': '/var/run/secrets/kubernetes.io/serviceaccount/token',
+                'spark.kubernetes.node.selector.pc.microsoft.com/workerkind': 'spark-cpu'
+            }
+
+
+
+    
