@@ -93,6 +93,13 @@ daskhub:
           c.KubeSpawner.extra_labels = {}
         kubespawner: |
           c.KubeSpawner.start_timeout = 15 * 60  # 15 minutes
+          # pass the parent namespace through, needed for pre_spawn_hook to copy resources
+          c.KubeSpawner.environment['NAMESPACE_PARENT'] = c.KubeSpawner.namespace
+          # hub allocates notebook in user namespaces
+          c.KubeSpawner.enable_user_namespaces = True
+          # the hub url should be accessible across namespaces
+          c.KubeSpawner.hub_connect_url = f'http://hub.{c.KubeSpawner.namespace}.svc.cluster.local:8081'
+
         01-add-dask-gateway-values: |
           # The daskhub helm chart doesn't correctly handle hub.baseUrl.
           # DASK_GATEWAY__PUBLIC_ADDRESS set via terraform
@@ -105,19 +112,55 @@ daskhub:
           # Sets the following
           # 1. environment variable PC_SDK_SUBSCRIPTION_KEY
           # ---------------------------------------------------
+          from kubernetes.client.rest import ApiException
 
           async def pre_spawn_hook(spawner):
+              spawner.environment['NAMESPACE_USER'] = spawner.namespace
+              namespace_parent = spawner.environment['NAMESPACE_PARENT']
+
+              # create user namespace before running the spawner
+              if spawner.enable_user_namespaces:
+                await spawner._ensure_namespace()
+
+              # copy secrets and configmaps into the new namespace
+              api = spawner.api
+              for s in api.list_namespaced_secret(namespace_parent).items:
+                  print(f's.metadata.name: {s.metadata.name}')
+                  s.metadata.namespace = spawner.namespace
+                  s.metadata.resource_version = None
+                  try:
+                      api.create_namespaced_secret(spawner.namespace, s)
+                  except ApiException as e:
+                      if e.status != 409:
+                          # It's fine if it already exists
+                          spawner.log.exception(f'Failed to create namespace {spawner.namespace.namespace}, trying to patch...')
+                          api.patch_namespaced_secret(spawner.namespace, s)
+                          raise
+
+              for m in api.list_namespaced_config_map(namespace_parent).items:
+                  print(f'm.metadata.name: {m.metadata.name}')
+                  m.metadata.namespace = spawner.namespace
+                  m.metadata.resource_version = None
+                  try:
+                      api.create_namespaced_config_map(spawner.namespace, m)
+                  except ApiException as e:
+                      if e.status != 409:
+                          # It's fine if it already exists
+                          spawner.log.exception(f'Failed to create namespace {spawner.namespace.namespace}, trying to patch...')
+                          api.patch_namespaced_config_map(spawner.namespace, m)
+                          raise
+
               # unmount spark default configuration with py env preload if not needed, for more details see
               # https://github.com/jupyterhub/kubespawner/issues/501
               # https://discourse.jupyter.org/t/tailoring-spawn-options-and-server-configuration-to-certain-users/8449
               if spawner.user_options.get('profile', '') != 'pyspark':
-                spawner.volume_mounts = list(filter(lambda e: 'spark' not in e.get('subPath', ''), spawner.volume_mounts))
+                  spawner.volume_mounts = list(filter(lambda e: 'spark' not in e.get('subPath', ''), spawner.volume_mounts))
 
-              # expose the Spark UI
-              spawner.extra_container_config = {'ports': [
-                {'containerPort': 8888, 'name': 'notebook-port', 'protocol': 'TCP'},
-                {'containerPort': 4040, 'name': 'spark-ui', 'protocol': 'TCP'}
-              ]}
+                  # expose the Spark UI (needed only in the pyspark profile case)
+                  spawner.extra_container_config = {'ports': [
+                      {'containerPort': 8888, 'name': 'notebook-port', 'protocol': 'TCP'},
+                      {'containerPort': 4040, 'name': 'spark-ui', 'protocol': 'TCP'}
+                  ]}
 
               username = spawner.user.name
               # `username` is an email address. We use that email address to look up the
@@ -167,6 +210,21 @@ daskhub:
                   
 
           c.KubeSpawner.pre_spawn_hook = pre_spawn_hook
+
+        # it is the spawner post stop hook, not related to the notebook lifecycle
+        # we don't need it
+        post_stop_hook: |
+          from kubernetes.client.rest import ApiException
+          async def post_stop_hook(spawner):
+              try:
+                  spawner.api.delete_namespace(spawner.namespace)
+              except ApiException as e:
+                  if e.status != 409:
+                      # It's fine if it is already removed
+                      spawner.log.exception(f'Failed to delete namespace {spawner.namespace.namespace}')
+                  raise
+
+          # c.KubeSpawner.post_stop_hook = post_stop_hook
 
     proxy:
       https:
