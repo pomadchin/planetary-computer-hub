@@ -5,6 +5,10 @@ resource "azurerm_kubernetes_cluster" "pc_compute" {
   dns_prefix          = "${local.maybe_staging_prefix}-cluster"
   kubernetes_version  = var.kubernetes_version
   sku_tier            = "Paid"
+  
+  # role_based_access_control {
+    # enabled = true # var.enable_role_based_access_control
+  # }
 
   addon_profile {
     kube_dashboard {
