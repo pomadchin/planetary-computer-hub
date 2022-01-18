@@ -1,39 +1,34 @@
+
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: hub
+  name: autohttps
   namespace: {{ .Release.Namespace }}
   labels:
     app: jupyterhub
     app.kubernetes.io/managed-by: Helm
     chart: jupyterhub-1.0.1
-    component: hub
+    component: autohttps
     heritage: Helm
     release: dhub-{{ .Release.Namespace }}
   annotations:
     meta.helm.sh/release-name: dhub-{{ .Release.Namespace }}
     meta.helm.sh/release-namespace: {{ .Release.Namespace }}
 rules:
-  - apiGroups: [""]
-    resources: ["pods", "persistentvolumeclaims", "secrets", "configmaps", "services", "namespaces", "serviceaccounts"]
-    verbs: ["get", "watch", "list", "create", "delete", "update"]
-  - apiGroups: ["rbac.authorization.k8s.io"]
-    resources: ["roles", "rolebindings"]
-    verbs: ["get", "watch", "list", "create", "delete", "update"]
-  - apiGroups: [""]
-    resources: ["events"]
-    verbs: ["get", "watch", "list"]
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get", "patch", "list", "create"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: hub
+  name: autohttps
   namespace: {{ .Release.Namespace }}
   labels:
     app: jupyterhub
     app.kubernetes.io/managed-by: Helm
     chart: jupyterhub-1.0.1
-    component: hub
+    component: autohttps
     heritage: Helm
     release: dhub-{{ .Release.Namespace }}
   annotations:
@@ -41,9 +36,9 @@ metadata:
     meta.helm.sh/release-namespace: {{ .Release.Namespace }}
 subjects:
   - kind: ServiceAccount
-    name: hub
+    name: autohttps
     namespace: {{ .Release.Namespace }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: hub
+  name: autohttps

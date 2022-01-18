@@ -115,6 +115,12 @@ variable "workspace_id" {
   description = "A random (unique) string to use for the Log Analystics workspace."
 }
 
+variable "enable_role_based_access_control" {
+  type        = bool
+  default     = true
+  description = "Enable Role Based Access Control."
+}
+
 # ----------------------------------------------------------------------------
 # Deploy values
 

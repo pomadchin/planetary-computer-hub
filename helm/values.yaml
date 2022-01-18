@@ -101,12 +101,12 @@ daskhub:
           # hub allocates notebook in user namespaces
           c.KubeSpawner.enable_user_namespaces = True
           # the hub url should be accessible across namespaces
-          c.KubeSpawner.hub_connect_url = f'http://hub.{c.KubeSpawner.namespace}.svc.cluster.local:8081'
+          c.KubeSpawner.hub_connect_url = "http://hub.${namespace}.svc.cluster.local:8081"
 
         01-add-dask-gateway-values: |
           # The daskhub helm chart doesn't correctly handle hub.baseUrl.
           # DASK_GATEWAY__PUBLIC_ADDRESS set via terraform
-          c.KubeSpawner.environment["DASK_GATEWAY__ADDRESS"] = "http://proxy-http:8000/compute/services/dask-gateway/"
+          c.KubeSpawner.environment["DASK_GATEWAY__ADDRESS"] = "http://proxy-http.${namespace}.svc.cluster.local:8000/compute/services/dask-gateway/"
           c.KubeSpawner.environment["DASK_GATEWAY__PUBLIC_ADDRESS"] = "https://${jupyterhub_host}/compute/services/dask-gateway/"
         templates: |
           c.JupyterHub.template_paths.insert(0, "/etc/jupyterhub/templates")
@@ -117,22 +117,12 @@ daskhub:
           # ---------------------------------------------------
           from kubernetes.client import RbacAuthorizationV1Api
           from kubernetes.client.rest import ApiException
-          from kubernetes.client.models import V1Role, V1PolicyRule, V1ObjectMeta
+          from kubernetes.client.models import V1Role, V1PolicyRule, V1ObjectMeta, V1Subject, V1RoleRef, V1RoleBinding, V1ServiceAccount
 
           async def restricted_service_account(spawner, name, namespace, role_name): 
               api = spawner.api
               try:
-                  api.create_namespaced_service_account(
-                      namespace,
-                      {
-                          'apiVersion': 'v1',
-                          'kind': 'ServiceAccount',
-                          'metadata': {
-                              'name': name,
-                              'namespace': namespace,
-                          },
-                      }
-                  )
+                  api.create_namespaced_service_account(namespace, V1ServiceAccount(metadata=V1ObjectMeta(name=name)))
               except ApiException as e:
                   if e.status != 409:
                       # It's fine if it already exists
@@ -140,8 +130,11 @@ daskhub:
                       raise
               try:
                   rules = [
-                    V1PolicyRule([""], resources=["pods"], verbs=["get", "list", "create", "delete", "update"], ),
-                    V1PolicyRule(["extensions"], resources=["deployments", "replicasets"], verbs=["get", "list", "create", "delete", "update"], )
+                    V1PolicyRule(
+                        [''], 
+                        resources=['pods', 'services', 'configmaps'], 
+                        verbs=['get', 'watch', 'list', 'create', 'delete', 'update']
+                    )
                   ]
                   role = V1Role(rules=rules)
                   role.metadata = V1ObjectMeta(namespace=namespace, name=role_name)
@@ -153,6 +146,18 @@ daskhub:
                       # It's fine if it already exists
                       spawner.log.exception(f'Failed to create role {role} for service account {name} in the {namespace} namespace')
                       raise
+              try:
+                  subject = V1Subject(kind='ServiceAccount', name=name, namespace=namespace)
+                  role_ref = V1RoleRef(api_group='rbac.authorization.k8s.io', kind='Role', name=role_name)
+                  metadata = V1ObjectMeta(name=f'{role_name}-binding')
+                  role_binding = V1RoleBinding(metadata=metadata, role_ref=role_ref, subjects=[subject])
+                  rbac = RbacAuthorizationV1Api()
+                  rbac.create_namespaced_role_binding(namespace=namespace, body=role_binding)
+              except ApiException as e:
+                  if e.status != 409:
+                      # It's fine if it already exists
+                      spawner.log.exception(f'Failed to create role binding for {role} and service account {name} in the {namespace} namespace')
+                      raise
 
           async def pre_spawn_hook(spawner):
               spawner.environment['NAMESPACE_USER'] = spawner.namespace
@@ -161,8 +166,7 @@ daskhub:
               # create user namespace before running the spawner
               if spawner.enable_user_namespaces:
                   await spawner._ensure_namespace()
-                  # await restricted_service_account(spawner, 'default', spawner.namespace, 'default-role')
-                  await restricted_service_account(spawner, 'default-restricted', spawner.namespace, 'default-restricted-role')
+                  await restricted_service_account(spawner, 'default', spawner.namespace, 'default-role')
 
               # copy secrets and configmaps into the new namespace
               api = spawner.api
@@ -274,7 +278,7 @@ daskhub:
 
     singleuser:
       # if not set, it also backs to default but with no ServiceAccount secrets mounted
-      serviceAccountName: default-restricted # default should be default with the correct access
+      serviceAccountName: default
 
       # These limits match the "large" profiles, so that a user requesting large will be successfully scheduled.
       # The user scheduler doesn't evict multiple placeholders.
@@ -357,7 +361,7 @@ daskhub:
       auth:
         jupyterhub:
           apiToken: "{{ tf.jupyterhub_dask_gateway_token }}"
-          apiUrl: http://proxy-http:8000/compute/hub/api
+          apiUrl: http://proxy-http.${namespace}.svc.cluster.local:8000/compute/hub/api
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:

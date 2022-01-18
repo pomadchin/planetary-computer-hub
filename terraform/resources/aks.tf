@@ -6,9 +6,9 @@ resource "azurerm_kubernetes_cluster" "pc_compute" {
   kubernetes_version  = var.kubernetes_version
   sku_tier            = "Paid"
   
-  # role_based_access_control {
-    # enabled = true # var.enable_role_based_access_control
-  # }
+  role_based_access_control {
+    enabled = var.enable_role_based_access_control
+  }
 
   addon_profile {
     kube_dashboard {
