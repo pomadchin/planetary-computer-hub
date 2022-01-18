@@ -151,7 +151,7 @@ daskhub:
                 'spark.driver.memory': '1g',
                 'spark.executor.cores': '3',
                 'spark.kubernetes.namespace': namespace_user,
-                'spark.kubernetes.container.image': 'quay.io/daunnc/spark-k8s-py-3.8.8-gdal32:3.1.2',
+                'spark.kubernetes.container.image': 'quay.io/daunnc/spark-k8s-py-3.8.8-gdal32-msftpc:3.1.2',
                 'spark.kubernetes.executor.deleteOnTermination': 'true',
                 'spark.kubernetes.authenticate.driver.serviceAccountName': 'default',
                 'spark.kubernetes.authenticate.caCertFile': '/var/run/secrets/kubernetes.io/serviceaccount/ca.crt',
