@@ -199,8 +199,8 @@ daskhub:
               # https://discourse.jupyter.org/t/tailoring-spawn-options-and-server-configuration-to-certain-users/8449
               if spawner.user_options.get('profile', '') != 'pyspark':
                   spawner.volume_mounts = list(filter(lambda e: 'spark' not in e.get('subPath', ''), spawner.volume_mounts))
-
-                  # expose the Spark UI (needed only in the pyspark profile case)
+              # expose the Spark UI (needed only in the pyspark profile case)
+              else:
                   spawner.extra_container_config = {'ports': [
                       {'containerPort': 8888, 'name': 'notebook-port', 'protocol': 'TCP'},
                       {'containerPort': 4040, 'name': 'spark-ui', 'protocol': 'TCP'}
