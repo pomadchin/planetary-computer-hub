@@ -6,15 +6,20 @@ cd helm/chart && \
     cd ../..
 
 echo "[init terraform]"
-terraform -chdir=terraform/${ENVIRONMENT} init
+terraform -chdir=terraform/${ENVIRONMENT} init -reconfigure
 
 echo "[applying terraform]"
+# echo "[destroy terraform]"
+# terraform -chdir=terraform/${ENVIRONMENT} plan -destroy -out plan.tfstate
 terraform -chdir=terraform/${ENVIRONMENT} plan -out plan.tfstate
 terraform -chdir=terraform/${ENVIRONMENT} apply plan.tfstate
+
+# echo "[destroy terraform]"
+# terraform -chdir=terraform/${ENVIRONMENT} apply -destroy plan.tfstate
 
 echo "[getting kubeconfig]"
 terraform -chdir=terraform/${ENVIRONMENT} output -json resources | jq -r .kubeconfig > .kubeconfig
 export KUBECONFIG=".kubeconfig"
 
-echo "[test deployment]"
-./tests/run.sh
+# echo "[test deployment]"
+# ./tests/run.sh
