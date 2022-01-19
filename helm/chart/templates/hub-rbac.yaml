@@ -4,15 +4,10 @@ metadata:
   name: hub
   namespace: {{ .Release.Namespace }}
   labels:
-    app: jupyterhub
-    app.kubernetes.io/managed-by: Helm
-    chart: jupyterhub-1.0.1
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
     component: hub
-    heritage: Helm
-    release: dhub-{{ .Release.Namespace }}
-  annotations:
-    meta.helm.sh/release-name: dhub-{{ .Release.Namespace }}
-    meta.helm.sh/release-namespace: {{ .Release.Namespace }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
 rules:
   - apiGroups: [""]
     resources: ["pods", "persistentvolumeclaims", "secrets", "configmaps", "services", "namespaces", "serviceaccounts"]
@@ -30,15 +25,10 @@ metadata:
   name: hub
   namespace: {{ .Release.Namespace }}
   labels:
-    app: jupyterhub
-    app.kubernetes.io/managed-by: Helm
-    chart: jupyterhub-1.0.1
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
     component: hub
-    heritage: Helm
-    release: dhub-{{ .Release.Namespace }}
-  annotations:
-    meta.helm.sh/release-name: dhub-{{ .Release.Namespace }}
-    meta.helm.sh/release-namespace: {{ .Release.Namespace }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
 subjects:
   - kind: ServiceAccount
     name: hub
